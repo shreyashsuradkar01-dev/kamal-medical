@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamal Medical - Your Trusted Local Pharmacy & General Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .active-tab {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .active-content {
+            display: block;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+            animation: slide-down 0.3s ease-out;
+        }
+        @keyframes slide-down {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+        }
+        .prose h1 { @apply text-3xl font-bold mb-4 text-gray-800; }
+        .prose h2 { @apply text-2xl font-bold mt-6 mb-3 text-gray-800; }
+        .prose p { @apply mb-4 text-gray-700 leading-relaxed; }
+        .prose ul { @apply list-disc list-inside mb-4 pl-4; }
+        .prose li { @apply mb-2 text-gray-700; }
+        .prose strong { @apply font-semibold text-gray-900; }
+        .hidden { display: none; }
+        
+        .star-rating .fa-star {
+            color: #d1d5db; /* gray-300 */
+        }
+        .star-rating .fa-star.text-yellow-400 {
+            color: #facc15; /* yellow-400 */
+        }
+        .review-form-stars label {
+            cursor: pointer;
+        }
+        .review-form-stars input:checked ~ label,
+        .review-form-stars:not(:checked) > label:hover,
+        .review-form-stars:not(:checked) > label:hover ~ label {
+            color: #facc15;
+        }
+        #toast {
+            transition: opacity 0.5s, transform 0.5s;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+             <a href="#home" class="flex items-center space-x-2" aria-label="Kamal Medical Home">
+                <!-- New Lotus + Medical Plus Logo -->
+                <div class="w-9 h-9 bg-blue-600 text-white flex items-center justify-center rounded-lg p-1">
+                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                        <path d="M13,11h4v2h-4v4h-2v-4H7v-2h4V7h2V11z"/>
+                        <path d="M12,2c-2.43,3.34-4,5.63-4,8c0,2.21,1.79,4,4,4s4-1.79,4-4C16,7.63,14.43,5.34,12,2z M17.65,15.53 C16.42,17.43,14.36,18.5,12,18.5s-4.42-1.07-5.65-3C4.19,13.07,4,10.2,5.5,8.37C6.5,7.1,8.04,6.5,10,6.5h4 c1.96,0,3.5,0.6,4.5,1.87C19.99,10.2,19.81,13.07,17.65,15.53z"/>
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold text-blue-600">Kamal Medical</span>
+            </a>
+            <nav class="hidden md:flex space-x-6 items-center">
+                <a href="#home" class="text-gray-600 hover:text-blue-600">Home</a>
+                <a href="#store" class="text-gray-600 hover:text-blue-600">Shop</a>
+                <a href="#contact" class="text-gray-600 hover:text-blue-600">Contact</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <button id="searchBtn" class="text-gray-600 hover:text-blue-600"><i class="fas fa-search"></i></button>
+                <button id="cartBtn" class="relative text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                </button>
+                <div id="auth-container">
+                    <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Login</button>
+                </div>
+                 <div id="user-profile" class="hidden items-center space-x-3">
+                    <span id="username" class="font-semibold text-gray-700 hidden md:inline"></span>
+                    <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300">Logout</button>
+                </div>
+                <button id="mobileMenuBtn" class="md:hidden text-gray-600 hover:text-blue-600 text-xl"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+            <a href="#home" class="block py-3 px-4 text-gray-600 hover:bg-gray-100">Home</a>
+            <a href="#store" class="block py-3 px-4 text-gray-600 hover:bg-gray-100">Shop</a>
+            <a href="#contact" class="block py-3 px-4 text-gray-600 hover:bg-gray-100">Contact</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Homepage Section -->
+        <section id="home" class="pt-8 pb-16">
+            <div class="container mx-auto px-4">
+                <!-- Hero Section -->
+                <div class="bg-blue-100 rounded-lg p-8 md:p-12 flex flex-col md:flex-row items-center mb-12">
+                    <div class="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+                        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Your One-Stop Health & Home Store.</h2>
+                        <p class="text-gray-600 text-lg mb-6">Fast, reliable, and convenient access to all your healthcare and general needs. Delivered right to your doorstep.</p>
+                        <a href="#store" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">Shop Now</a>
+                    </div>
+                    <div class="md:w-1/2">
+                        <img src="https://placehold.co/600x400/EBF8FF/3182CE?text=Kamal+Medical" alt="Pharmacist" class="rounded-lg shadow-lg">
+                    </div>
+                </div>
+
+                <!-- Highest Selling Products -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-center mb-8">Highest Selling Products</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 text-center flex flex-col justify-between" data-product-id="5">
+                            <div>
+                                <img src="https://placehold.co/200x200/E6FFFA/2C7A7B?text=Vitamins" alt="Revital H Multivitamin" class="mx-auto h-32 w-32 object-cover rounded-md mb-4">
+                                <h4 class="font-semibold text-md">Revital H Multivitamin</h4>
+                                <p class="text-gray-500 text-sm">60 Capsules</p>
+                            </div>
+                            <div class="mt-4">
+                                <div class="product-rating text-sm mb-2"></div>
+                                <span class="font-bold text-lg">₹450.00</span>
+                                <button class="add-to-cart-btn-main w-full mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Add to Cart</button>
+                            </div>
+                        </div>
+                        <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 text-center flex flex-col justify-between" data-product-id="13">
+                           <div>
+                                <img src="https://placehold.co/200x200/F0FFF4/38A169?text=Home+Care" alt="Dettol Antiseptic" class="mx-auto h-32 w-32 object-cover rounded-md mb-4">
+                                <h4 class="font-semibold text-md">Dettol Antiseptic</h4>
+                                <p class="text-gray-500 text-sm">550ml Bottle</p>
+                            </div>
+                            <div class="mt-4">
+                                <div class="product-rating text-sm mb-2"></div>
+                                <span class="font-bold text-lg">₹180.00</span>
+                                <button class="add-to-cart-btn-main w-full mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Add to Cart</button>
+                            </div>
+                        </div>
+                        <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 text-center flex flex-col justify-between" data-product-id="12">
+                            <div>
+                                <img src="https://placehold.co/200x200/EDF2F7/4A5568?text=Devices" alt="Accu-Chek Glucometer" class="mx-auto h-32 w-32 object-cover rounded-md mb-4">
+                                <h4 class="font-semibold text-md">Accu-Chek Glucometer</h4>
+                                <p class="text-gray-500 text-sm">With 10 Test Strips</p>
+                            </div>
+                            <div class="mt-4">
+                                <div class="product-rating text-sm mb-2"></div>
+                                <span class="font-bold text-lg">₹1100.00</span>
+                                <button class="add-to-cart-btn-main w-full mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Add to Cart</button>
+                            </div>
+                        </div>
+                        <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 text-center flex flex-col justify-between" data-product-id="9">
+                            <div>
+                                <img src="https://placehold.co/200x200/FEFCBF/B7791F?text=Baby+Care" alt="Pampers Diapers" class="mx-auto h-32 w-32 object-cover rounded-md mb-4">
+                                <h4 class="font-semibold text-md">Pampers Diapers</h4>
+                                <p class="text-gray-500 text-sm">Medium, Pack of 50</p>
+                            </div>
+                            <div class="mt-4">
+                                <div class="product-rating text-sm mb-2"></div>
+                                <span class="font-bold text-lg">₹799.00</span>
+                                <button class="add-to-cart-btn-main w-full mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Add to Cart</button>
+                            </div>
+                        </div>
+                         <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 text-center flex flex-col justify-between" data-product-id="4">
+                            <div>
+                                <img src="https://placehold.co/200x200/E6FFFA/2C7A7B?text=Nutrition" alt="ON Whey Protein" class="mx-auto h-32 w-32 object-cover rounded-md mb-4">
+                                <h4 class="font-semibold text-md">ON Whey Protein</h4>
+                                <p class="text-gray-500 text-sm">2 lbs, Double Rich Chocolate</p>
+                            </div>
+                            <div class="mt-4">
+                                <div class="product-rating text-sm mb-2"></div>
+                                <span class="font-bold text-lg">₹3499.00</span>
+                                <button class="add-to-cart-btn-main w-full mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Subscribe & Save Section -->
+                <div class="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-8 flex flex-col md:flex-row items-center justify-between mb-12">
+                    <div class="mb-6 md:mb-0 md:w-2/3">
+                        <h3 class="font-bold text-2xl text-teal-800 flex items-center"><i class="fas fa-sync-alt mr-3"></i> Subscribe & Save!</h3>
+                        <p class="text-teal-700 mt-2">Never run out of your essentials again. Subscribe to regular deliveries and save 5% on every order. It's convenient, automatic, and saves you money.</p>
+                    </div>
+                    <a href="#store" class="bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition duration-300">Explore Subscriptions</a>
+                </div>
+
+                <!-- Core Features -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 text-center">
+                    <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-lg transition">
+                        <i class="fas fa-bolt text-3xl text-blue-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg">Express Delivery</h3>
+                        <p class="text-gray-500">Get your essentials delivered in under 2 hours.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-lg transition">
+                        <i class="fas fa-store text-3xl text-blue-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg">In-Store Pickup</h3>
+                        <p class="text-gray-500">Order online, pick up at your convenience.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-lg transition">
+                        <i class="fas fa-shield-alt text-3xl text-blue-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg">100% Genuine Products</h3>
+                        <p class="text-gray-500">Authentic medicines and wellness products.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-lg transition">
+                        <i class="fas fa-headset text-3xl text-blue-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg">Expert Support</h3>
+                        <p class="text-gray-500">Pharmacist support via chat and call.</p>
+                    </div>
+                </div>
+
+                <!-- E-Prescription Upload -->
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-6 rounded-lg flex flex-col md:flex-row items-center justify-between mb-12">
+                    <div>
+                        <h3 class="font-bold text-xl">Have a Prescription?</h3>
+                        <p>Upload it here and we'll process your order in minutes.</p>
+                    </div>
+                    <button id="uploadPrescriptionBtn" class="mt-4 md:mt-0 bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300 flex items-center">
+                        <i class="fas fa-upload mr-2"></i> Upload Now
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Online Store Section -->
+        <section id="store" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-2">Our Online Store</h2>
+                <p class="text-center text-gray-500 mb-8">Browse our wide range of products.</p>
+
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 mb-8">
+                    <input type="text" id="searchInput" placeholder="Search for any product..." class="flex-grow p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="categoryFilter" class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="all">All Categories</option>
+                        <option value="allopathic">Allopathic</option>
+                        <option value="ayurvedic">Ayurvedic</option>
+                        <option value="homeopathic">Homeopathic</option>
+                        <option value="cosmetic">Cosmetics</option>
+                        <option value="surgical">Surgical</option>
+                        <option value="wellness">Wellness & Nutrition</option>
+                        <option value="personal-care">Personal Care</option>
+                        <option value="baby-care">Baby Care</option>
+                        <option value="devices">Medical Devices</option>
+                        <option value="home-essentials">Home Essentials</option>
+                        <option value="orthopedic-care">Orthopedic Care</option>
+                        <option value="feminine-hygiene">Feminine Hygiene</option>
+                        <option value="elderly-care">Elderly Care</option>
+                        <option value="pet-care">Pet Care</option>
+                        <option value="health-drinks">Health Drinks</option>
+                        <option value="sexual-wellness">Sexual Wellness</option>
+                    </select>
+                </div>
+
+                <!-- Product Grid -->
+                <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <!-- Products will be dynamically inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- One-Click Reorder & Account Section -->
+        <section class="py-16">
+            <div class="container mx-auto px-4">
+                 <div class="bg-white p-8 rounded-lg shadow-lg flex flex-col md:flex-row items-center gap-8">
+                     <div class="w-full md:w-1/2">
+                         <h3 class="text-2xl font-bold mb-3">Welcome back!</h3>
+                         <p class="text-gray-600 mb-6">Reordering your monthly essentials is now easier than ever.</p>
+                         <button class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center">
+                             <i class="fas fa-redo-alt mr-2"></i> One-Click Reorder
+                         </button>
+                     </div>
+                     <div class="w-full md:w-1/2 bg-gray-50 p-6 rounded-lg">
+                         <h4 class="font-semibold mb-4">Your Active Subscriptions:</h4>
+                         <ul class="space-y-2 text-gray-700">
+                             <li class="flex justify-between"><span>Revital H Multivitamin</span> <span>Next on Oct 15</span></li>
+                             <li class="flex justify-between"><span>Pampers Diapers</span> <span>Next on Oct 25</span></li>
+                         </ul>
+                         <a href="#" class="text-blue-600 font-semibold mt-4 inline-block hover:underline">Manage Subscriptions &rarr;</a>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Contact & Location Section -->
+        <section id="contact" class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="max-w-2xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold mb-4">Get In Touch</h2>
+                    <p class="text-gray-600 mb-6">We're here to help you. Visit our store or contact us for any queries.</p>
+                    <div class="bg-white p-8 rounded-lg shadow-md inline-block">
+                        <div class="space-y-6">
+                            <div class="flex items-center text-left">
+                                <i class="fas fa-map-marker-alt text-blue-600 text-2xl mr-4"></i>
+                                <div>
+                                    <h4 class="font-semibold">Our Address</h4>
+                                    <p class="text-gray-700">Shop No.A/9,Ganiban Co-Op.H.Soc.,Indira Nagar,Dharavi,Mumbai-400017</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-left">
+                                <i class="fas fa-clock text-blue-600 text-2xl mr-4"></i>
+                                <div>
+                                    <h4 class="font-semibold">Opening Hours</h4>
+                                    <p class="text-gray-700">Mon - Sat: 8:00 AM - 10:00 PM</p>
+                                    <p class="text-gray-700">Sun: 9:00 AM - 5:00 PM</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-left">
+                                <i class="fas fa-phone-alt text-blue-600 text-2xl mr-4"></i>
+                                <div>
+                                    <h4 class="font-semibold">Contact Us</h4>
+                                    <p class="text-gray-700">Phone: 9867669772</p>
+                                    <p class="text-gray-700">Email: contact@kamalmedical.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white pt-12 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Kamal Medical</h4>
+                    <p class="text-gray-400">Your trusted partner in health and wellness since 1995.</p>
+                    <p class="text-gray-400 mt-2">Proprietor: Ramesh Patel</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#store" class="text-gray-400 hover:text-white">Store</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Customer Service</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Track Order</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Return Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-6 text-center text-gray-500 text-sm">
+                &copy; 2025 Kamal Medical. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add to Cart Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transform translate-y-10 z-[60]">
+        Item added to cart!
+    </div>
+
+    <!-- Prescription Upload Modal -->
+    <div id="prescriptionModal" class="modal">
+        <div class="modal-content">
+            <span id="closePrescriptionModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Upload Your Prescription</h3>
+            <p class="text-gray-600 mb-6">Attach a clear image of your prescription. Our team will contact you shortly.</p>
+            <form id="prescriptionForm">
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="name" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="phone" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="mb-6">
+                     <label for="prescription-file" class="block text-sm font-medium text-gray-700 mb-1">Upload File</label>
+                     <input type="file" id="prescription-file" class="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Submit for Processing</button>
+            </form>
+            <div id="aiAnalysisSection" class="mt-4 pt-4 border-t hidden">
+                 <button id="analyzePrescriptionBtn" class="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-teal-700 transition duration-300 flex items-center justify-center">
+                    <span id="analysisBtnText">✨ Get AI Analysis</span>
+                    <i id="analysisLoader" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                </button>
+                <div id="aiAnalysisResult" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden prose max-w-none"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Login/Signup Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span id="closeLoginModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <div id="loginView">
+                <h3 class="text-2xl font-bold mb-4 text-center">Welcome Back!</h3>
+                <form id="loginForm">
+                    <div class="mb-4">
+                        <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="loginEmail" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="loginPassword" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                     <p id="loginError" class="text-red-500 text-sm text-center mb-4 hidden"></p>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Login</button>
+                </form>
+                <div class="my-4 flex items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="mx-2 text-gray-500 text-sm">OR</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                <button id="googleSignInBtnLogin" type="button" class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 flex items-center justify-center transition-colors">
+                    <img src="https://www.google.com/favicon.ico" alt="Google icon" class="w-5 h-5 mr-3">
+                    Sign in with Google
+                </button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Don't have an account? <a href="#" id="showSignup" class="font-semibold text-blue-600 hover:underline">Sign up</a>
+                </p>
+            </div>
+            <div id="signupView" class="hidden">
+                 <h3 class="text-2xl font-bold mb-4 text-center">Create an Account</h3>
+                <form id="signupForm">
+                    <div class="mb-4">
+                        <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="signupEmail" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="signupPassword" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                     <p id="signupError" class="text-red-500 text-sm text-center mb-4 hidden"></p>
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Create Account</button>
+                </form>
+                 <div class="my-4 flex items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="mx-2 text-gray-500 text-sm">OR</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                <button id="googleSignInBtnSignup" type="button" class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 flex items-center justify-center transition-colors">
+                    <img src="https://www.google.com/favicon.ico" alt="Google icon" class="w-5 h-5 mr-3">
+                    Sign up with Google
+                </button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Already have an account? <a href="#" id="showLogin" class="font-semibold text-blue-600 hover:underline">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content !max-w-xl">
+            <span id="closeCartModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Your Shopping Cart</h3>
+            <div id="cartItemsContainer" class="mb-6">
+                <!-- Cart items will be dynamically inserted here -->
+                 <p id="emptyCartMsg" class="text-gray-500 text-center">Your cart is empty.</p>
+            </div>
+            <div id="cartTotalSection" class="border-t pt-4 hidden">
+                 <div class="flex justify-between items-center font-bold text-lg">
+                    <span>Total:</span>
+                    <span id="cartTotal">₹0.00</span>
+                </div>
+                <button id="proceedToCheckoutBtn" class="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <span id="closeSearchModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Search Products</h3>
+            <div class="relative mb-4">
+                <input type="text" id="modalSearchInput" placeholder="What are you looking for?" class="w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <div id="modalSearchResults" class="space-y-3 max-h-96 overflow-y-auto">
+                <!-- Search results will appear here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Product Detail Modal -->
+    <div id="productDetailModal" class="modal">
+        <div class="modal-content !max-w-3xl">
+            <span id="closeProductDetailModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <div id="productDetailContent" class="grid md:grid-cols-2 gap-8 items-start">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipping Details Modal -->
+    <div id="shippingModal" class="modal">
+        <div class="modal-content">
+            <span id="closeShippingModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Shipping Information</h3>
+            <p class="text-gray-600 mb-6">Please enter your delivery details.</p>
+            <form id="shippingForm">
+                <div class="space-y-4">
+                    <div>
+                        <label for="shippingName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="shippingName" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="shippingAddress" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <textarea id="shippingAddress" rows="3" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="shippingCity" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <input type="text" id="shippingCity" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="shippingPincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                            <input type="text" id="shippingPincode" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required pattern="\d{6}">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="shippingPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="tel" id="shippingPhone" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500" required pattern="\d{10}">
+                    </div>
+                </div>
+                <button type="submit" id="continueToPaymentBtn" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Continue to Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span id="closePaymentModal" class="close-btn text-2xl text-gray-500 hover:text-gray-800">&times;</span>
+            <h3 class="text-2xl font-bold mb-2">Complete Your Order</h3>
+            <p class="text-gray-600 mb-6">Select a payment method to continue.</p>
+            
+            <div class="border-t border-b py-4 mb-6">
+                <div class="flex justify-between items-center font-bold text-xl">
+                    <span>Order Total:</span>
+                    <span id="paymentTotal">₹0.00</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
+                    <input type="radio" name="paymentMethod" value="upi" class="h-5 w-5 text-blue-600 focus:ring-blue-500" checked>
+                    <span class="ml-4 flex-grow font-semibold">UPI (Google Pay, PhonePe, etc.)</span>
+                    <i class="fab fa-google-pay text-2xl text-gray-500"></i>
+                </label>
+                <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
+                    <input type="radio" name="paymentMethod" value="card" class="h-5 w-5 text-blue-600 focus:ring-blue-500">
+                    <span class="ml-4 flex-grow font-semibold">Credit / Debit Card</span>
+                    <i class="fas fa-credit-card text-xl text-gray-500"></i>
+                </label>
+                <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
+                    <input type="radio" name="paymentMethod" value="cod" id="codOption" class="h-5 w-5 text-blue-600 focus:ring-blue-500">
+                    <div class="ml-4 flex-grow">
+                        <span class="font-semibold">Cash on Delivery</span>
+                        <p id="codMessage" class="text-xs text-red-500 hidden">Only available for orders above ₹199</p>
+                    </div>
+                    <i class="fas fa-money-bill-wave text-xl text-gray-500"></i>
+                </label>
+            </div>
+
+            <button id="confirmOrderBtn" class="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-transform">Confirm Order</button>
+        </div>
+    </div>
+
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // --- Application State & Data ---
+    let cart = [];
+
+    // --- Product Database ---
+    const products = [
+        { id: 1, name: 'Paracetamol 500mg', desc: 'Strip of 10 tablets', price: 25.00, category: 'allopathic', img: 'https://placehold.co/200x200/EBF8FF/3182CE?text=Medicine', isSubscribable: false, reviews: [] },
+        { id: 2, name: 'Antacid Gel', desc: '200ml Syrup', price: 95.00, category: 'allopathic', img: 'https://placehold.co/200x200/EBF8FF/3182CE?text=Medicine', isSubscribable: true, reviews: [{id: 1, author: 'Ravi', rating: 4, text: 'Works well for acidity.'}] },
+        { id: 21, name: 'Vicks VapoRub', desc: '50ml', price: 140.00, category: 'allopathic', img: 'https://placehold.co/200x200/EBF8FF/3182CE?text=Cold+Relief', isSubscribable: true, reviews: [] },
+        { id: 22, name: 'Moov Pain Relief', desc: '50g Spray', price: 185.00, category: 'allopathic', img: 'https://placehold.co/200x200/EBF8FF/3182CE?text=Pain+Relief', isSubscribable: false, reviews: [] },
+        { id: 23, name: 'Iodex Pain Balm', desc: '40g', price: 130.00, category: 'allopathic', img: 'https://placehold.co/200x200/EBF8FF/3182CE?text=Pain+Balm', isSubscribable: false, reviews: [] },
+        { id: 3, name: 'Vitamin C Supplement', desc: '60 Chewable Tablets', price: 199.00, category: 'wellness', img: 'https://placehold.co/200x200/E6FFFA/2C7A7B?text=Wellness', isSubscribable: true, reviews: [] },
+        { id: 4, name: 'ON Whey Protein', desc: '2 lbs, Double Rich Chocolate', price: 3499.00, category: 'wellness', img: 'https://placehold.co/200x200/E6FFFA/2C7A7B?text=Nutrition', isSubscribable: true, reviews: [{id:1, author:'Amit', rating: 5, text: 'Best protein powder on the market! Mixes well.'}] },
+        { id: 5, name: 'Revital H Multivitamin', desc: '60 Capsules', price: 450.00, category: 'wellness', img: 'https://placehold.co/200x200/E6FFFA/2C7A7B?text=Vitamins', isSubscribable: true, reviews: [{id: 1, author: 'Priya', rating: 5, text: 'Feeling more energetic after using this for a month.'}, {id: 2, author: 'Vikram', rating: 4, text: 'Good product, but a bit expensive.'}] },
+        { id: 31, name: 'MuscleBlaze Creatine', desc: 'Monohydrate, 250g', price: 899.00, category: 'wellness', img: 'https://placehold.co/200x200/E6FFFA/2C7A7B?text=Fitness', isSubscribable: true, reviews: [] },
+        { id: 32, name: 'GNC Fish Oil', desc: 'Omega-3, 60 Capsules', price: 650.00, category: 'wellness', img: 'https://placehold.co/200x200/E6FFFA/2C7A7B?text=Supplements', isSubscribable: true, reviews: [] },
+        { id: 6, name: 'Cetaphil Cleanser', desc: '125ml Bottle', price: 320.00, category: 'personal-care', img: 'https://placehold.co/200x200/FFF5F7/9D2449?text=Skin+Care', isSubscribable: true, reviews: [] },
+        { id: 7, name: 'Nivea Men Deodorant', desc: '150ml', price: 199.00, category: 'personal-care', img: 'https://placehold.co/200x200/FFF5F7/9D2449?text=Grooming', isSubscribable: false, reviews: [] },
+        { id: 8, name: 'Dove Shampoo', desc: '200ml Bottle', price: 185.00, category: 'personal-care', img: 'https://placehold.co/200x200/FFF5F7/9D2449?text=Hair+Care', isSubscribable: true, reviews: [] },
+        { id: 24, name: 'Himalaya Neem Face Wash', desc: '150ml', price: 170.00, category: 'personal-care', img: 'https://placehold.co/200x200/FFF5F7/9D2449?text=Face+Wash', isSubscribable: true, reviews: [] },
+        { id: 33, name: 'Listerine Mouthwash', desc: 'Cool Mint, 250ml', price: 120.00, category: 'personal-care', img: 'https://placehold.co/200x200/FFF5F7/9D2449?text=Oral+Care', isSubscribable: true, reviews: [] },
+        { id: 34, name: 'Gillette Mach3 Razor', desc: '1 Razor with 2 Cartridges', price: 299.00, category: 'personal-care', img: 'https://placehold.co/200x200/FFF5F7/9D2449?text=Shaving', isSubscribable: false, reviews: [] },
+        { id: 9, name: 'Pampers Diapers', desc: 'Medium, Pack of 50', price: 799.00, category: 'baby-care', img: 'https://placehold.co/200x200/FEFCBF/B7791F?text=Baby+Care', isSubscribable: true, reviews: [{id: 1, author: 'Sunita', rating: 5, text: 'Very soft and absorbent. Best for my baby.'}] },
+        { id: 10, name: 'Johnson\'s Baby Powder', desc: '400g', price: 210.00, category: 'baby-care', img: 'https://placehold.co/200x200/FEFCBF/B7791F?text=Baby+Care', isSubscribable: true, reviews: [] },
+        { id: 35, name: 'Himalaya Baby Wipes', desc: 'Pack of 72', price: 150.00, category: 'baby-care', img: 'https://placehold.co/200x200/FEFCBF/B7791F?text=Baby+Wipes', isSubscribable: true, reviews: [] },
+        { id: 11, name: 'Omron BP Monitor', desc: 'Digital, Upper Arm', price: 1850.00, category: 'devices', img: 'https://placehold.co/200x200/EDF2F7/4A5568?text=Devices', isSubscribable: false, reviews: [] },
+        { id: 12, name: 'Accu-Chek Glucometer', desc: 'With 10 Test Strips', price: 1100.00, category: 'devices', img: 'https://placehold.co/200x200/EDF2F7/4A5568?text=Devices', isSubscribable: false, reviews: [] },
+        { id: 13, name: 'Dettol Antiseptic', desc: '550ml Bottle', price: 180.00, category: 'home-essentials', img: 'https://placehold.co/200x200/F0FFF4/38A169?text=Home+Care', isSubscribable: true, reviews: [{id: 1, author: 'Geeta', rating: 5, text: 'A must-have in every home.'}] },
+        { id: 14, name: 'Savlon Hand Sanitizer', desc: '200ml', price: 99.00, category: 'home-essentials', img: 'https://placehold.co/200x200/F0FFF4/38A169?text=Hygiene', isSubscribable: true, reviews: [] },
+        { id: 36, name: 'Harpic Toilet Cleaner', desc: '1L Bottle', price: 190.00, category: 'home-essentials', img: 'https://placehold.co/200x200/F0FFF4/38A169?text=Cleaning', isSubscribable: true, reviews: [] },
+        { id: 37, name: 'Lizol Floor Cleaner', desc: '975ml, Citrus', price: 210.00, category: 'home-essentials', img: 'https://placehold.co/200x200/F0FFF4/38A169?text=Cleaning', isSubscribable: true, reviews: [] },
+        { id: 15, name: 'Pedigree Dog Food', desc: 'Chicken & Veg, 3kg', price: 580.00, category: 'pet-care', img: 'https://placehold.co/200x200/FAF5FF/805AD5?text=Pet+Care', isSubscribable: true, reviews: [] },
+        { id: 38, name: 'Whiskas Cat Food', desc: 'Tuna Flavour, 1.2kg', price: 350.00, category: 'pet-care', img: 'https://placehold.co/200x200/FAF5FF/805AD5?text=Pet+Food', isSubscribable: true, reviews: [] },
+        { id: 25, name: 'Dabur Chyawanprash', desc: '1kg', price: 340.00, category: 'ayurvedic', img: 'https://placehold.co/200x200/FEEBC8/DD6B20?text=Ayurveda', isSubscribable: true, reviews: [] },
+        { id: 26, name: 'Dabur Honitus Cough Syrup', desc: '100ml', price: 90.00, category: 'ayurvedic', img: 'https://placehold.co/200x200/FEEBC8/DD6B20?text=Ayurveda', isSubscribable: true, reviews: [] },
+        { id: 27, name: 'Zandu Pancharishta', desc: '450ml', price: 145.00, category: 'ayurvedic', img: 'https://placehold.co/200x200/FEEBC8/DD6B20?text=Digestion', isSubscribable: true, reviews: [] },
+        { id: 28, name: 'Horlicks Health Drink', desc: 'Classic Malt, 1kg', price: 450.00, category: 'health-drinks', img: 'https://placehold.co/200x200/FEFCBF/D69E2E?text=Health+Drink', isSubscribable: true, reviews: [] },
+        { id: 29, name: 'Complan Nutrition Drink', desc: 'Chocolate Flavour, 500g', price: 310.00, category: 'health-drinks', img: 'https://placehold.co/200x200/FEFCBF/D69E2E?text=Health+Drink', isSubscribable: true, reviews: [] },
+        { id: 30, name: 'Durex Invisible Condoms', desc: 'Pack of 10', price: 250.00, category: 'sexual-wellness', img: 'https://placehold.co/200x200/E2E8F0/4A5568?text=Wellness', isSubscribable: false, reviews: [] },
+        { id: 41, name: 'Knee Brace Support', desc: 'Adjustable, for Pain Relief', price: 450.00, category: 'orthopedic-care', img: 'https://placehold.co/200x200/D6BCFA/6B46C1?text=Ortho', isSubscribable: false, reviews: [] },
+        { id: 42, name: 'Ankle Support Brace', desc: 'For Sprains and Stability', price: 320.00, category: 'orthopedic-care', img: 'https://placehold.co/200x200/D6BCFA/6B46C1?text=Ortho', isSubscribable: false, reviews: [] },
+        { id: 43, name: 'Back Support Belt', desc: 'For Lower Back Pain', price: 799.00, category: 'orthopedic-care', img: 'https://placehold.co/200x200/D6BCFA/6B46C1?text=Support', isSubscribable: false, reviews: [] },
+        { id: 44, name: 'Stayfree Secure Pads', desc: 'XL, Pack of 40', price: 180.00, category: 'feminine-hygiene', img: 'https://placehold.co/200x200/FBB6CE/B83280?text=Hygiene', isSubscribable: true, reviews: [] },
+        { id: 45, name: 'Whisper Ultra Clean', desc: 'XL Plus, Pack of 30', price: 210.00, category: 'feminine-hygiene', img: 'https://placehold.co/200x200/FBB6CE/B83280?text=Hygiene', isSubscribable: true, reviews: [] },
+        { id: 46, name: 'Sirona Menstrual Cup', desc: 'Medium Size, Reusable', price: 350.00, category: 'feminine-hygiene', img: 'https://placehold.co/200x200/FBB6CE/B83280?text=Hygiene', isSubscribable: false, reviews: [] },
+        { id: 47, name: 'Friends Adult Diapers', desc: 'Medium, Pack of 10', price: 450.00, category: 'elderly-care', img: 'https://placehold.co/200x200/A0AEC0/4A5568?text=Elder+Care', isSubscribable: true, reviews: [] },
+        { id: 48, name: 'Walking Stick with Seat', desc: 'Foldable and Lightweight', price: 999.00, category: 'elderly-care', img: 'https://placehold.co/200x200/A0AEC0/4A5568?text=Elder+Care', isSubscribable: false, reviews: [] },
+        { id: 49, name: 'Ensure Nutritional Powder', desc: 'Chocolate, 400g', price: 650.00, category: 'elderly-care', img: 'https://placehold.co/200x200/A0AEC0/4A5568?text=Nutrition', isSubscribable: true, reviews: [] },
+        { id: 50, name: 'Arnica Montana 30C', desc: 'Homeopathic Remedy', price: 120.00, category: 'homeopathic', img: 'https://placehold.co/200x200/C6F6D5/34D399?text=Homeopathy', isSubscribable: true, reviews: [] },
+        { id: 51, name: 'Nux Vomica 30C', desc: 'Homeopathic Remedy', price: 120.00, category: 'homeopathic', img: 'https://placehold.co/200x200/C6F6D5/34D399?text=Homeopathy', isSubscribable: true, reviews: [] },
+        { id: 52, name: 'Surgical Gloves', desc: 'Box of 100', price: 450.00, category: 'surgical', img: 'https://placehold.co/200x200/BEE3F8/60A5FA?text=Surgical', isSubscribable: false, reviews: [] },
+        { id: 53, name: 'Surgical Mask', desc: 'Pack of 50', price: 250.00, category: 'surgical', img: 'https://placehold.co/200x200/BEE3F8/60A5FA?text=Surgical', isSubscribable: false, reviews: [] },
+        { id: 54, name: 'Lakme Lipstick', desc: 'Red Matte', price: 299.00, category: 'cosmetic', img: 'https://placehold.co/200x200/FBCFE8/EC4899?text=Cosmetic', isSubscribable: false, reviews: [] },
+        { id: 55, name: 'Maybelline Foundation', desc: 'Fit Me, Shade 128', price: 549.00, category: 'cosmetic', img: 'https://placehold.co/200x200/FBCFE8/EC4899?text=Cosmetic', isSubscribable: false, reviews: [] },
+        { id: 56, name: 'Azithromycin 500mg', desc: 'Strip of 5 tablets', price: 120.00, category: 'allopathic', img: 'https://placehold.co/200x200/EBF8FF/3182CE?text=Antibiotic', isSubscribable: false, reviews: [] }
+    ];
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Firebase Setup ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" }; // Placeholder for local dev
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+
+        // --- UI Element References ---
+        const productGrid = document.getElementById('productGrid');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        
+        // Auth elements
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginModal = document.getElementById('loginModal');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const authContainer = document.getElementById('auth-container');
+        const userProfile = document.getElementById('user-profile');
+        const loginView = document.getElementById('loginView');
+        const signupView = document.getElementById('signupView');
+        const showSignup = document.getElementById('showSignup');
+        const showLogin = document.getElementById('showLogin');
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+        const googleSignInBtnLogin = document.getElementById('googleSignInBtnLogin');
+        const googleSignInBtnSignup = document.getElementById('googleSignInBtnSignup');
+
+        // Cart elements
+        const cartBtn = document.getElementById('cartBtn');
+        const cartModal = document.getElementById('cartModal');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const emptyCartMsg = document.getElementById('emptyCartMsg');
+        const cartTotalSection = document.getElementById('cartTotalSection');
+        const cartCount = document.getElementById('cartCount');
+        const cartTotal = document.getElementById('cartTotal');
+        const proceedToCheckoutBtn = document.getElementById('proceedToCheckoutBtn');
+        
+        // Search Modal elements
+        const modalSearchInput = document.getElementById('modalSearchInput');
+        const modalSearchResults = document.getElementById('modalSearchResults');
+
+        // Product Detail Modal
+        const productDetailModal = document.getElementById('productDetailModal');
+        const productDetailContent = document.getElementById('productDetailContent');
+        const closeProductDetailModal = document.getElementById('closeProductDetailModal');
+        
+        // Shipping Modal
+        const shippingModal = document.getElementById('shippingModal');
+        const closeShippingModal = document.getElementById('closeShippingModal');
+        const shippingForm = document.getElementById('shippingForm');
+        
+        // Payment Modal
+        const paymentModal = document.getElementById('paymentModal');
+        const closePaymentModal = document.getElementById('closePaymentModal');
+        const paymentTotal = document.getElementById('paymentTotal');
+        const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+
+        // Mobile Menu
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        // --- UTILITY FUNCTIONS ---
+        function setupModal(modalId, openBtnId, closeBtnId) {
+            const modal = document.getElementById(modalId);
+            const openBtn = document.getElementById(openBtnId);
+            const closeBtn = document.getElementById(closeBtnId);
+
+            if (modal && openBtn && closeBtn) {
+                openBtn.addEventListener('click', () => {
+                    modal.style.display = 'flex';
+                });
+
+                closeBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+
+                window.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+        }
+        
+        closeProductDetailModal.addEventListener('click', () => {
+             productDetailModal.style.display = 'none';
+        });
+
+        closeShippingModal.addEventListener('click', () => {
+            shippingModal.style.display = 'none';
+        });
+
+        closePaymentModal.addEventListener('click', () => {
+            paymentModal.style.display = 'none';
+        });
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // --- AUTHENTICATION ---
+        function updateUIForUser(user) {
+            const username = document.getElementById('username');
+             const authContainer = document.getElementById('auth-container');
+            const userProfile = document.getElementById('user-profile');
+            const loginBtn = document.getElementById('loginBtn');
+
+
+            if (user && !user.isAnonymous) {
+                 if (authContainer) authContainer.style.display = 'none';
+                if (userProfile) userProfile.classList.remove('hidden');
+                if (username && user.email) {
+                    username.textContent = user.email.split('@')[0];
+                }
+                if (loginModal) loginModal.style.display = 'none';
+            } else {
+                if (authContainer) authContainer.style.display = 'block';
+                if (userProfile) userProfile.classList.add('hidden');
+                if (username) username.textContent = '';
+            }
+        }
+        
+        function initialAuth() {
+            onAuthStateChanged(auth, (user) => {
+                updateUIForUser(user);
+                if (!user) {
+                    signInAnonymously(auth).catch((error) => {
+                        console.error("Anonymous sign-in failed:", error);
+                    });
+                }
+            });
+        }
+        
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    loginError.textContent = error.message;
+                    loginError.classList.remove('hidden');
+                });
+        });
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    signupError.textContent = error.message;
+                    signupError.classList.remove('hidden');
+                });
+        });
+
+        const handleGoogleSignIn = () => {
+            signInWithPopup(auth, googleProvider)
+                .catch((error) => {
+                    console.error("Google Sign-In Error:", error);
+                    loginError.textContent = "Failed to sign in with Google. Please try again.";
+                    loginError.classList.remove('hidden');
+                });
+        };
+
+        googleSignInBtnLogin.addEventListener('click', handleGoogleSignIn);
+        googleSignInBtnSignup.addEventListener('click', handleGoogleSignIn);
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginView.classList.add('hidden');
+            signupView.classList.remove('hidden');
+            loginError.classList.add('hidden');
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupView.classList.add('hidden');
+            loginView.classList.remove('hidden');
+            signupError.classList.add('hidden');
+        });
+
+
+        // --- REVIEWS & RATINGS ---
+        function getAverageRating(product) {
+            if (!product.reviews || product.reviews.length === 0) {
+                return { average: 0, count: 0 };
+            }
+            const total = product.reviews.reduce((sum, review) => sum + review.rating, 0);
+            return {
+                average: (total / product.reviews.length).toFixed(1),
+                count: product.reviews.length
+            };
+        }
+
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="fas fa-star text-yellow-400"></i>';
+                } else if (i - 0.5 <= rating) {
+                    stars += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+                } else {
+                    stars += '<i class="far fa-star text-yellow-400"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function openProductDetailModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const ratingInfo = getAverageRating(product);
+            const currentUser = auth.currentUser;
+
+            let reviewsHTML = '<h3 class="text-xl font-bold mt-6 mb-4">Customer Reviews</h3>';
+            if (product.reviews.length > 0) {
+                reviewsHTML += '<div class="space-y-4 max-h-48 overflow-y-auto">';
+                product.reviews.forEach(review => {
+                    reviewsHTML += `
+                        <div class="border-t pt-4">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold">${review.author}</span>
+                                <div class="star-rating">${renderStars(review.rating)}</div>
+                            </div>
+                            <p class="text-gray-600 mt-2">${review.text}</p>
+                        </div>
+                    `;
+                });
+                reviewsHTML += '</div>';
+            } else {
+                reviewsHTML += '<p class="text-gray-500">No reviews yet. Be the first to write one!</p>';
+            }
+
+            let reviewFormHTML = '';
+            if (currentUser && !currentUser.isAnonymous) {
+                reviewFormHTML = `
+                    <form id="reviewForm" class="mt-6 border-t pt-4">
+                        <h4 class="font-bold mb-2">Write a Review</h4>
+                        <div class="mb-2">
+                             <div class="review-form-stars star-rating text-2xl flex flex-row-reverse justify-end" id="ratingStars">
+                                <input type="radio" id="star5" name="rating" value="5" class="hidden" required/><label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star4" name="rating" value="4" class="hidden"/><label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star3" name="rating" value="3" class="hidden"/><label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star2" name="rating" value="2" class="hidden"/><label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star1" name="rating" value="1" class="hidden"/><label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <textarea id="reviewText" rows="3" placeholder="Share your thoughts..." class="w-full p-2 border rounded-md mb-2" required></textarea>
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">Submit Review</button>
+                    </form>
+                `;
+            } else {
+                reviewFormHTML = '<p class="mt-6 border-t pt-4 text-gray-600">Please <button id="loginFromReview" class="font-semibold text-blue-600 hover:underline">log in</button> to write a review.</p>';
+            }
+
+            const subscribeBtnHTML = product.isSubscribable 
+                ? `<button data-product-id="${product.id}" class="subscribe-btn flex-1 bg-teal-100 text-teal-800 px-4 py-2 rounded-lg font-semibold hover:bg-teal-200">Subscribe & Save 5%</button>` 
+                : '';
+
+            productDetailContent.innerHTML = `
+                <div>
+                    <img src="${product.img}" alt="${product.name}" class="w-full rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl font-bold">${product.name}</h2>
+                    <p class="text-gray-500 mb-4">${product.desc}</p>
+                    <div class="flex items-center mb-4">
+                        <div class="star-rating">${renderStars(ratingInfo.average)}</div>
+                        <span class="ml-2 text-gray-600">(${ratingInfo.average} from ${ratingInfo.count} reviews)</span>
+                    </div>
+                    <p class="text-4xl font-bold mb-6">₹${product.price.toFixed(2)}</p>
+                    <div class="flex gap-4 mb-auto">
+                        <button data-product-id="${product.id}" class="add-to-cart-btn flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Add Once</button>
+                        ${subscribeBtnHTML}
+                    </div>
+                     <div class="mt-8">${reviewsHTML}</div>
+                     <div>${reviewFormHTML}</div>
+                </div>
+            `;
+
+            productDetailModal.style.display = 'flex';
+            
+            // Add event listeners for new elements
+            const reviewForm = document.getElementById('reviewForm');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const ratingInput = reviewForm.querySelector('input[name="rating"]:checked');
+                    if (!ratingInput) {
+                        alert('Please select a star rating.');
+                        return;
+                    }
+                    const rating = ratingInput.value;
+                    const text = document.getElementById('reviewText').value;
+                    const newReview = {
+                        id: product.reviews.length + 1,
+                        author: currentUser.email.split('@')[0],
+                        rating: parseInt(rating, 10),
+                        text: text
+                    };
+                    product.reviews.push(newReview);
+                    openProductDetailModal(productId); // Re-render the modal
+                    renderProducts(products); // Re-render product grid to update stars
+                });
+            }
+            
+            const loginFromReviewBtn = document.getElementById('loginFromReview');
+            if (loginFromReviewBtn) {
+                loginFromReviewBtn.addEventListener('click', () => {
+                    productDetailModal.style.display = 'none';
+                    loginModal.style.display = 'flex';
+                });
+            }
+        }
+
+        // --- PRODUCT RENDERING ---
+        function renderProducts(productsToRender) {
+            productGrid.innerHTML = '';
+            if (productsToRender.length === 0) {
+                productGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No products found matching your criteria.</p>';
+                return;
+            }
+            productsToRender.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 text-center flex flex-col justify-between cursor-pointer';
+                card.dataset.productId = product.id;
+                
+                const ratingInfo = getAverageRating(product);
+                
+                const subscriptionHTML = product.isSubscribable
+                    ? `<button data-product-id="${product.id}" class="subscribe-btn-main w-full mt-2 bg-teal-100 text-teal-800 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-teal-200">Subscribe & Save 5%</button>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="pointer-events-none">
+                        <img src="${product.img}" alt="${product.name}" class="mx-auto h-32 w-32 object-cover rounded-md mb-4">
+                        <h4 class="font-semibold text-md">${product.name}</h4>
+                        <p class="text-gray-500 text-sm">${product.desc}</p>
+                    </div>
+                    <div class="mt-4">
+                        <div class="star-rating text-sm mb-2">${renderStars(ratingInfo.average)} <span class="text-gray-500">(${ratingInfo.count})</span></div>
+                        <span class="font-bold text-lg">₹${product.price.toFixed(2)}</span>
+                        <button data-product-id="${product.id}" class="add-to-cart-btn-main w-full mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Add Once</button>
+                        ${subscriptionHTML}
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+
+        // --- PRODUCT FILTERING ---
+        function filterProducts() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+
+            const filteredProducts = products.filter(product => {
+                const nameMatch = product.name.toLowerCase().includes(searchTerm) || product.desc.toLowerCase().includes(searchTerm);
+                const categoryMatch = selectedCategory === 'all' || product.category === selectedCategory;
+                return nameMatch && categoryMatch;
+            });
+
+            renderProducts(filteredProducts);
+        }
+
+        searchInput.addEventListener('keyup', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
+
+        // --- SHOPPING CART LOGIC ---
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.opacity = 1;
+            toast.style.transform = 'translateY(0)';
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.style.opacity = 0;
+                toast.style.transform = 'translateY(2.5rem)'; 
+            }, 3000);
+        }
+
+        function addToCart(productId, isSubscription = false) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId && item.isSubscription === isSubscription);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1, isSubscription });
+            }
+            updateCartUI();
+            showToast(`${product.name} added to cart!`);
+        }
+
+        function changeQuantity(productId, newQuantity, isSubscription) {
+            const item = cart.find(i => i.id === productId && i.isSubscription === isSubscription);
+            if (!item) return;
+
+            if (newQuantity <= 0) {
+                 cart = cart.filter(i => !(i.id === productId && i.isSubscription === isSubscription));
+            } else {
+                item.quantity = newQuantity;
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            // Update cart icon count
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+
+            // Update cart modal
+            if (cart.length === 0) {
+                emptyCartMsg.classList.remove('hidden');
+                cartTotalSection.classList.add('hidden');
+                cartItemsContainer.innerHTML = '';
+                 cartItemsContainer.appendChild(emptyCartMsg);
+            } else {
+                emptyCartMsg.classList.add('hidden');
+                cartTotalSection.classList.remove('hidden');
+                cartItemsContainer.innerHTML = '';
+                let total = 0;
+                cart.forEach(item => {
+                    const price = item.isSubscription ? item.price * 0.95 : item.price;
+                    const itemTotal = price * item.quantity;
+                    total += itemTotal;
+
+                    const subscriptionBadge = item.isSubscription 
+                        ? '<span class="text-xs font-semibold bg-teal-100 text-teal-800 px-2 py-1 rounded-full ml-2">Subscription</span>' 
+                        : '';
+                    
+                    const priceDisplay = item.isSubscription
+                        ? `<p class="text-sm text-gray-500">₹${price.toFixed(2)} <span class="line-through ml-1">₹${item.price.toFixed(2)}</span></p>`
+                        : `<p class="text-sm text-gray-500">₹${item.price.toFixed(2)}</p>`;
+
+
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex items-center justify-between py-3 border-b';
+                    itemEl.innerHTML = `
+                        <div class="flex items-center space-x-4">
+                            <img src="${item.img}" alt="${item.name}" class="w-16 h-16 rounded-md object-cover">
+                            <div>
+                                <h4 class="font-semibold">${item.name} ${subscriptionBadge}</h4>
+                                ${priceDisplay}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button class="quantity-change-btn w-6 h-6 bg-gray-200 rounded-full" data-id="${item.id}" data-qty="${item.quantity - 1}" data-sub="${item.isSubscription}">-</button>
+                            <span class="font-semibold">${item.quantity}</span>
+                            <button class="quantity-change-btn w-6 h-6 bg-gray-200 rounded-full" data-id="${item.id}" data-qty="${item.quantity + 1}" data-sub="${item.isSubscription}">+</button>
+                        </div>
+                        <span class="font-bold">₹${itemTotal.toFixed(2)}</span>
+                    `;
+                    cartItemsContainer.appendChild(itemEl);
+                });
+                cartTotal.textContent = `₹${total.toFixed(2)}`;
+            }
+        }
+        
+        document.addEventListener('click', (e) => {
+             // Handle clicks from within the product detail modal
+            if (productDetailModal.style.display === 'flex' && productDetailModal.contains(e.target)) {
+                 if (e.target.classList.contains('add-to-cart-btn')) {
+                    const productId = parseInt(e.target.dataset.productId, 10);
+                    addToCart(productId, false);
+                }
+                if (e.target.classList.contains('subscribe-btn')) {
+                    const productId = parseInt(e.target.dataset.productId, 10);
+                    addToCart(productId, true);
+                }
+                 return; 
+            }
+            
+            // Handle clicks from the main page
+            if (e.target.classList.contains('add-to-cart-btn-main')) {
+                const button = e.target;
+                const productId = parseInt(button.closest('.product-card').dataset.productId, 10);
+                addToCart(productId, false);
+                e.stopPropagation(); // Prevent modal from opening
+            } else if (e.target.classList.contains('subscribe-btn-main')) {
+                const button = e.target;
+                const productId = parseInt(button.closest('.product-card').dataset.productId, 10);
+                addToCart(productId, true);
+                e.stopPropagation(); // Prevent modal from opening
+            }
+            else if (e.target.closest('.product-card')) {
+                 const card = e.target.closest('.product-card');
+                 const productId = parseInt(card.dataset.productId, 10);
+                 openProductDetailModal(productId);
+            }
+        });
+
+        cartItemsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('quantity-change-btn')) {
+                const productId = parseInt(e.target.dataset.id, 10);
+                const newQuantity = parseInt(e.target.dataset.qty, 10);
+                const isSubscription = e.target.dataset.sub === 'true';
+                changeQuantity(productId, newQuantity, isSubscription);
+            }
+        });
+
+        proceedToCheckoutBtn.addEventListener('click', () => {
+            cartModal.style.display = 'none';
+            shippingModal.style.display = 'flex';
+        });
+        
+        shippingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            shippingModal.style.display = 'none';
+
+            const totalString = cartTotal.textContent.replace('₹', '');
+            const totalValue = parseFloat(totalString);
+            
+            paymentTotal.textContent = `₹${totalValue.toFixed(2)}`;
+
+            const codOption = document.getElementById('codOption');
+            const codLabel = codOption.closest('label');
+            const codMessage = document.getElementById('codMessage');
+            const upiOption = document.querySelector('input[name="paymentMethod"][value="upi"]');
+
+            if (totalValue < 199) {
+                codOption.disabled = true;
+                codLabel.classList.add('opacity-50', 'cursor-not-allowed');
+                codMessage.classList.remove('hidden');
+                if (codOption.checked) {
+                   upiOption.checked = true;
+                }
+            } else {
+                codOption.disabled = false;
+                codLabel.classList.remove('opacity-50', 'cursor-not-allowed');
+                codMessage.classList.add('hidden');
+            }
+
+            paymentModal.style.display = 'flex';
+        });
+
+        confirmOrderBtn.addEventListener('click', () => {
+            paymentModal.style.display = 'none';
+            alert('Thank you for your order! It has been placed successfully.');
+            cart = [];
+            updateCartUI();
+        });
+        
+        setupModal('prescriptionModal', 'uploadPrescriptionBtn', 'closePrescriptionModal');
+        setupModal('loginModal', 'loginBtn', 'closeLoginModal');
+        setupModal('cartModal', 'cartBtn', 'closeCartModal');
+        setupModal('searchModal', 'searchBtn', 'closeSearchModal');
+
+
+        // --- SEARCH MODAL LOGIC ---
+        function handleModalSearch() {
+            const searchTerm = modalSearchInput.value.toLowerCase().trim();
+            modalSearchResults.innerHTML = '';
+
+            if (searchTerm.length < 2) {
+                modalSearchResults.innerHTML = '<p class="text-gray-500 text-center">Please enter at least 2 characters.</p>';
+                return;
+            }
+
+            const results = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) || 
+                product.desc.toLowerCase().includes(searchTerm)
+            );
+
+            if (results.length === 0) {
+                modalSearchResults.innerHTML = '<p class="text-gray-500 text-center">No products found.</p>';
+            } else {
+                results.forEach(product => {
+                    const resultEl = document.createElement('div');
+                    resultEl.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer';
+                    resultEl.dataset.productId = product.id;
+                    resultEl.innerHTML = `
+                        <div class="flex items-center space-x-3 pointer-events-none">
+                            <img src="${product.img}" alt="${product.name}" class="w-12 h-12 rounded-md object-cover">
+                            <div>
+                                <h4 class="font-semibold text-sm">${product.name}</h4>
+                                <p class="text-xs text-gray-500">₹${product.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <button data-product-id="${product.id}" class="add-to-cart-btn-main bg-blue-100 text-blue-700 px-3 py-1 text-xs font-semibold rounded-full hover:bg-blue-200">Add</button>
+                    `;
+                    modalSearchResults.appendChild(resultEl);
+                });
+            }
+        }
+        
+        modalSearchResults.addEventListener('click', (e) => {
+             if (e.target.classList.contains('add-to-cart-btn-main')) {
+                 const productId = parseInt(e.target.dataset.productId, 10);
+                 addToCart(productId);
+                 e.stopPropagation();
+             } else if (e.target.closest('[data-product-id]')) {
+                 const productId = parseInt(e.target.closest('[data-product-id]').dataset.productId, 10);
+                 openProductDetailModal(productId);
+                 searchModal.style.display = 'none';
+             }
+        });
+
+        modalSearchInput.addEventListener('keyup', handleModalSearch);
+
+        // --- INITIALIZATION ---
+        initialAuth();
+        renderProducts(products);
+        updateCartUI();
+        
+    });
+</script>
+
+</body>
+</html>
+
